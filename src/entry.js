@@ -1,16 +1,8 @@
 // Import vue components
 import VueAntdSuperUpload from './lib-components/index';
-// import Table from './lib-components/Table';
-// import List from './lib-components/List';
-// import Form from './lib-components/Form';
-// import Modal from './lib-components/Modal';
 
 export const components = {
-  VueAntdSuperUpload,
-  // Form,
-  // List,
-  // Table,
-  // Modal
+  VueAntdSuperUpload
 }
 
 

@@ -3,6 +3,7 @@ import vue from 'rollup-plugin-vue';
 import buble from 'rollup-plugin-buble';
 import commonjs from 'rollup-plugin-commonjs';
 import replace from 'rollup-plugin-replace';
+import less from 'rollup-plugin-less';
 import { terser } from 'rollup-plugin-terser';
 import minimist from 'minimist';
 
@@ -11,6 +12,7 @@ const argv = minimist(process.argv.slice(2));
 const baseConfig = {
   input: 'src/entry.js',
   plugins: {
+
     preVue: [
       replace({
         'process.env.NODE_ENV': JSON.stringify('production'),
@@ -28,6 +30,7 @@ const baseConfig = {
         objectAssign: 'Object.assign',
       }),
     ],
+
   },
 };
 
@@ -48,11 +51,12 @@ if (!argv.format || argv.format === 'es') {
   const esConfig = {
     ...baseConfig,
     output: {
-      file: 'src/dist/vue-antd-super-upload.esm.js',
+      file: 'dist/vue-antd-super-upload.esm.js',
       format: 'esm',
       exports: 'named',
     },
     plugins: [
+      less(),
       ...baseConfig.plugins.preVue,
       vue(baseConfig.plugins.vue),
       ...baseConfig.plugins.postVue,
@@ -72,13 +76,14 @@ if (!argv.format || argv.format === 'cjs') {
     external,
     output: {
       compact: true,
-      file: 'src/dist/vue-antd-super-upload.ssr.js',
+      file: 'dist/vue-antd-super-upload.ssr.js',
       format: 'cjs',
       name: 'VueAntdSuperForm',
       exports: 'named',
       globals,
     },
     plugins: [
+      less(),
       ...baseConfig.plugins.preVue,
       vue({
         ...baseConfig.plugins.vue,
@@ -99,13 +104,14 @@ if (!argv.format || argv.format === 'iife') {
     external,
     output: {
       compact: true,
-      file: 'src/dist/vue-antd-super-upload.min.js',
+      file: 'dist/vue-antd-super-upload.min.js',
       format: 'iife',
       name: 'VueAntdSuperForm',
       exports: 'named',
       globals,
     },
     plugins: [
+      less(),
       ...baseConfig.plugins.preVue,
       vue(baseConfig.plugins.vue),
       ...baseConfig.plugins.postVue,
