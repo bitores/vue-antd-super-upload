@@ -185,14 +185,12 @@ const Uploader = {
     handleCancelPreview() {
       this.previewVisible = false;
     },
-    handlePreview(file) {
+    async handlePreview(file) {
       if (!file.url && !file.preview) {
 
-        getBase64(file.originFileObj).then(res => {
-          file.preview = res;
-          this.previewImage = file.url || file.preview;
-          this.previewVisible = true;
-        });
+        file.preview = await getBase64(file.originFileObj)
+        this.previewImage = file.url || file.preview;
+        this.previewVisible = true;
       }
 
 
@@ -222,7 +220,7 @@ const Uploader = {
       ctx.drawImage(this.imageRef, x, y, width, height, 0, 0, width, height);
 
       const { name, type, uid } = this.originalFile;
-      canvas.toBlob(blob => {
+      canvas.toBlob(async blob => {
         // 生成新图片
         const croppedFile = new File([blob], name, {
           type,
@@ -248,15 +246,12 @@ const Uploader = {
         }
 
         try {
-          // const croppedProcessedFile = await response;
-          response.then(res => {
-            const croppedProcessedFile = res;
-            const fileType = Object.prototype.toString.call(croppedProcessedFile);
-            const useProcessedFile =
-              fileType === "[object File]" || fileType === "[object Blob]";
+          const croppedProcessedFile = await response;
+          const fileType = Object.prototype.toString.call(croppedProcessedFile);
+          const useProcessedFile =
+            fileType === "[object File]" || fileType === "[object Blob]";
 
-            this.resolve(useProcessedFile ? croppedProcessedFile : croppedFile);
-          })
+          this.resolve(useProcessedFile ? croppedProcessedFile : croppedFile);
 
         } catch (err) {
           this.reject(err);

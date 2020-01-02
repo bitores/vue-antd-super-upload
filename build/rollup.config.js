@@ -1,23 +1,39 @@
 // rollup.config.js
+import fs from 'fs';
+import path from 'path';
 import vue from 'rollup-plugin-vue';
-import buble from 'rollup-plugin-buble';
+import alias from '@rollup/plugin-alias';
 import commonjs from 'rollup-plugin-commonjs';
-import replace from 'rollup-plugin-replace';
+import replace from '@rollup/plugin-replace';
 import less from 'rollup-plugin-less';
+import babel from 'rollup-plugin-babel';
 import { terser } from 'rollup-plugin-terser';
 import minimist from 'minimist';
 
+// Get browserslist config and remove ie from es build targets
+const esbrowserslist = fs.readFileSync('./.browserslistrc')
+  .toString()
+  .split('\n')
+  .filter((entry) => entry && entry.substring(0, 2) !== 'ie');
+
 const argv = minimist(process.argv.slice(2));
+
+const projectRoot = path.resolve(__dirname, '..');
 
 const baseConfig = {
   input: 'src/entry.js',
   plugins: {
-
     preVue: [
       replace({
         'process.env.NODE_ENV': JSON.stringify('production'),
       }),
       commonjs(),
+      alias({
+        resolve: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
+        entries: {
+          '@': path.resolve(projectRoot, 'src'),
+        },
+      }),
     ],
     vue: {
       css: true,
@@ -25,24 +41,27 @@ const baseConfig = {
         isProduction: true,
       },
     },
-    postVue: [
-      buble({
-        objectAssign: 'Object.assign',
-      }),
-    ],
-
+    babel: {
+      exclude: 'node_modules/**',
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.vue'],
+    },
   },
 };
 
-// UMD/IIFE shared settings: externals and output.globals
-// Refer to https://rollupjs.org/guide/en#output-globals for details
+// ESM/UMD/IIFE shared settings: externals
+// Refer to https://rollupjs.org/guide/en/#warning-treating-module-as-external-dependency
 const external = [
   // list external dependencies, exactly the way it is written in the import statement.
   // eg. 'jquery'
+  'vue',
 ];
+
+// UMD/IIFE shared settings: output.globals
+// Refer to https://rollupjs.org/guide/en#output-globals for details
 const globals = {
   // Provide global variable names to replace your external imports
   // eg. jquery: '$'
+  vue: 'Vue',
 };
 
 // Customize configs for individual targets
@@ -50,6 +69,7 @@ const buildFormats = [];
 if (!argv.format || argv.format === 'es') {
   const esConfig = {
     ...baseConfig,
+    external,
     output: {
       file: 'dist/vue-antd-super-upload.esm.js',
       format: 'esm',
@@ -59,11 +79,16 @@ if (!argv.format || argv.format === 'es') {
       less(),
       ...baseConfig.plugins.preVue,
       vue(baseConfig.plugins.vue),
-      ...baseConfig.plugins.postVue,
-      terser({
-        output: {
-          ecma: 6,
-        },
+      babel({
+        ...baseConfig.plugins.babel,
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: esbrowserslist,
+            },
+          ],
+        ],
       }),
     ],
   };
@@ -78,7 +103,7 @@ if (!argv.format || argv.format === 'cjs') {
       compact: true,
       file: 'dist/vue-antd-super-upload.ssr.js',
       format: 'cjs',
-      name: 'VueAntdSuperForm',
+      name: 'VueAntdSuperUpload',
       exports: 'named',
       globals,
     },
@@ -92,7 +117,7 @@ if (!argv.format || argv.format === 'cjs') {
           optimizeSSR: true,
         },
       }),
-      ...baseConfig.plugins.postVue,
+      babel(baseConfig.plugins.babel),
     ],
   };
   buildFormats.push(umdConfig);
@@ -106,7 +131,7 @@ if (!argv.format || argv.format === 'iife') {
       compact: true,
       file: 'dist/vue-antd-super-upload.min.js',
       format: 'iife',
-      name: 'VueAntdSuperForm',
+      name: 'VueAntdSuperUpload',
       exports: 'named',
       globals,
     },
@@ -114,7 +139,7 @@ if (!argv.format || argv.format === 'iife') {
       less(),
       ...baseConfig.plugins.preVue,
       vue(baseConfig.plugins.vue),
-      ...baseConfig.plugins.postVue,
+      babel(baseConfig.plugins.babel),
       terser({
         output: {
           ecma: 5,
