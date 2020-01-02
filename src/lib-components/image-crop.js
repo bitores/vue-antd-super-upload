@@ -254,16 +254,7 @@ const ReactCrop = {
     src: null,
     circularCrop: { default: false, type: Boolean },
     className: undefined,
-    crop: {
-      type: Object,
-      default: {
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-        unit: "px"
-      }
-    },
+    crop: null,
     crossorigin: undefined,
     disabled: { default: false, type: Boolean },
     locked: { default: false, type: Boolean },

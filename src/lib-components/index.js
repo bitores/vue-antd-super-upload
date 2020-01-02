@@ -82,7 +82,11 @@ const Uploader = {
       //
       cropModalVisible: false,
       cropImageSrc: null,
-      cropData: {}
+      cropData: {
+        unit: 'px',
+        width: 100,
+        height: 100
+      }
     }
   },
 
@@ -199,7 +203,7 @@ const Uploader = {
       let { x, y, width, height } = this.cropData;
 
       if (!width || !height) {
-        this.onClose();
+        this.onCropClose();
         return;
       }
 
@@ -266,7 +270,11 @@ const Uploader = {
 
       //
       this.cropModalVisible = false;
-      this.cropData = {};
+      this.cropData = {
+        unit: 'px',
+        width: 100,
+        height: 100
+      };
     },
 
     onCropChange(cropData) {
